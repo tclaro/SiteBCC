@@ -30,7 +30,12 @@ Idioma de todo o conteúdo e dos comentários no código: **português brasileir
 Cada página é um arquivo HTML autônomo na raiz. Estrutura padrão:
 
 ```html
-<link rel="stylesheet" href="css/style.css">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <link rel="stylesheet" href="css/style.css?v=1">
+</head>
 <body>
   <main class="page-wrapper">
     <section class="card"> ... </section>
@@ -38,7 +43,7 @@ Cada página é um arquivo HTML autônomo na raiz. Estrutura padrão:
   <footer class="page-footer">
     <a href="index.html" class="footer-btn">Voltar ao Início</a>
   </footer>
-  <script src="assets/nav.js"></script>
+  <script src="assets/nav.js?v=1"></script>
 </body>
 ```
 
@@ -89,6 +94,14 @@ Classes de componente já existentes que devem ser reaproveitadas antes de criar
 ⚠️ [assets/faq.md](assets/faq.md) contém os mesmos textos em markdown mas **não é lido por nenhum código** — é um rascunho/fonte paralela. Ao alterar o FAQ, o arquivo que importa é o `faq.html`; se atualizar só o `.md`, nada muda no site.
 
 `faq.js` só é carregado por [index.html](index.html) — o `faq.html` funciona pelo caminho SPA. Da mesma forma, `faq.html` é a única página que **não** inclui `nav.js`, então aberta diretamente ela fica sem menu.
+
+### 5. Cache do navegador
+
+Como o site é estático e servido sem controle de headers HTTP, editar um arquivo não garante que o visitante veja a mudança sem um hard refresh. Para evitar isso:
+
+- Todo `<head>` inclui `<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">`, para que o navegador revalide o HTML da página em vez de reaproveitar uma cópia salva.
+- `css/style.css`, `assets/nav.js` e `assets/faq.js` são referenciados com uma query string de versão (`?v=1`). **Ao editar qualquer um desses três arquivos, incremente o `?v=N` em todas as páginas que o referenciam** — é isso que força o navegador a buscar a versão nova, já que muda a URL do recurso.
+- O roteador SPA de [index.html](index.html) faz `fetch(path, { cache: 'no-store' })`, para que a navegação pelo menu também não sirva um HTML em cache.
 
 ## Assets
 
