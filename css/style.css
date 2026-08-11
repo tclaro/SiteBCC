@@ -1,0 +1,122 @@
+/* =================================================================
+   STYLE.CSS - Arquivo principal que importa todos os módulos
+   ================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('base.css');
+@import url('layout.css');
+@import url('components.css');
+
+/* EMBEDS (PDF) */
+embed {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+}
+
+/* H2 global das páginas internas */
+.page-wrapper > h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-top: 32px;
+  margin-bottom: 12px;
+  position: relative;
+  padding-left: 16px;
+}
+
+.page-wrapper > h2::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 4px;
+  background: var(--color-accent);
+  border-radius: 2px;
+}
+
+/* Parágrafo introdutório */
+.page-wrapper > p:first-of-type {
+  color: var(--color-text-gray);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* FAQ - Accordion */
+.faq-container {
+  max-width: 700px;
+  margin-top: 32px;
+}
+
+.faq-item {
+  margin-bottom: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.faq-question {
+  width: 100%;
+  padding: 16px 20px;
+  background: var(--color-bg);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-align: left;
+}
+
+.faq-question:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-accent);
+}
+
+.faq-title {
+  flex: 1;
+}
+
+.faq-icon {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-accent);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.faq-answer {
+  display: none;
+  padding: 16px 20px;
+  background: var(--color-bg-light);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.faq-answer.active {
+  display: block;
+  animation: slideDown 0.3s ease;
+}
+
+.faq-answer p {
+  margin: 0;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

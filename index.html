@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Senac Comunidade BCC - Comunidade do BCC</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <script src="assets/nav.js"></script>
+
+  <main class="page-wrapper">
+    <section class="card">
+      <div class="card-tag">Informações Acadêmicas</div>
+
+      <h1 class="card-title">Sobre o BCC</h1>
+      <p class="page-description">Conheça mais sobre o Bacharelado em Ciência da Computação do Senac</p>
+
+      <!-- Identificação do Curso -->
+      <h2 class="section-title">Identificação do Curso</h2>
+      <div class="info-cards-grid">
+          <div class="info-card info-card-primary">
+          <strong>Nome do Curso:</strong>
+          <p>Bacharelado em Ciência da Computação</p>
+        </div>
+          <div class="info-card info-card-accent">
+          <strong>Sigla:</strong>
+          <p>BCC</p>
+        </div>
+          <div class="info-card info-card-primary">
+          <strong>Titulação:</strong>
+          <p>Bacharel em Ciência da Computação</p>
+        </div>
+          <div class="info-card info-card-accent">
+          <strong>Modalidade:</strong>
+          <p>Presencial</p>
+        </div>
+          <div class="info-card info-card-primary">
+          <strong>Turnos:</strong>
+          <p>Matutino e Noturno</p>
+        </div>
+          <div class="info-card info-card-accent">
+          <strong>Duração:</strong>
+          <p>8 períodos (4 anos)</p>
+        </div>
+      </div>
+
+      <!-- Carga Horária -->
+      <h2 class="section-title">Distribuição de Carga Horária</h2>
+      <div class="total-hours-block">
+        <p>Carga Horária Total: <strong>3.204 horas</strong></p>
+      </div>
+
+      <div class="hours-grid">
+        <div class="hours-card hours-card-primary">
+          <p class="hours-label">Carga Horária Presencial</p>
+          <p class="hours-value">2.682h</p>
+        </div>
+        <div class="hours-card hours-card-accent">
+          <p class="hours-label">Carga Horária à Distância</p>
+          <p class="hours-value">504h</p>
+        </div>
+        <div class="hours-card hours-card-primary">
+          <p class="hours-label">Atividades Complementares</p>
+          <p class="hours-value">72h</p>
+        </div>
+        <div class="hours-card hours-card-accent">
+          <p class="hours-label">Trabalho de Conclusão</p>
+          <p class="hours-value">108h</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <a href="index.html" class="footer-btn" title="Voltar à página inicial">Voltar ao Início</a>
+  </footer>
+
+  <script>
+  (function(){
+    const main = document.querySelector('main.page-wrapper');
+    const nav = document.querySelector('.chip-nav');
+
+    async function loadPage(path, push = true) {
+      main.classList.add('loading');
+      try {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error(res.status);
+        const txt = await res.text();
+        const doc = new DOMParser().parseFromString(txt, 'text/html');
+        const newMain = doc.querySelector('main.page-wrapper') || doc.body;
+        main.innerHTML = newMain.innerHTML;
+        updateActive(path);
+        if (push) history.pushState({path}, '', path);
+      } catch (err) {
+        console.error('Error loading', path, err);
+      } finally {
+        main.classList.remove('loading');
+      }
+    }
+
+    function updateActive(path) {
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('chip-active'));
+      const file = path.split('/').pop() || 'senac-comunidade-bcc.html';
+      const anchor = document.querySelector(`.chip[href="${file}"]`);
+      if (anchor) anchor.classList.add('chip-active');
+    }
+
+    nav.addEventListener('click', e => {
+      const a = e.target.closest('a');
+      if (!a) return;
+      
+      // Se o link é externo, deixa o comportamento padrão
+      const href = a.getAttribute('href');
+      if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
+        return;
+      }
+      
+      e.preventDefault();
+      history.pushState({path: href}, '', '#' + href.replace('.html', ''));
+      loadPage(href);
+    });
+
+    window.addEventListener('popstate', e => {
+      const p = (e.state && e.state.path) || location.pathname.split('/').pop();
+      if (p) loadPage(p, false);
+    });
+
+    window.addEventListener('hashchange', () => {
+      const hash = location.hash.substring(1);
+      if (hash) {
+        const page = hash.endsWith('.html') ? hash : hash + '.html';
+        loadPage(page, false);
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const hash = location.hash.substring(1);
+      if (hash) {
+        const page = hash.endsWith('.html') ? hash : hash + '.html';
+        loadPage(page, false);
+      } else {
+        const p = location.pathname.split('/').pop();
+        if (p && p !== 'index.html' && p !== '') loadPage(p, false);
+      }
+    });
+  })();
+  </script>
+  <script src="assets/faq.js"></script>
+</body>
+</html>

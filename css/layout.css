@@ -1,0 +1,116 @@
+/* =================================================================
+   LAYOUT.CSS - Estrutura de layout, sidebar e responsividade
+   ================================================================= */
+
+/* NAV LATERAL COM CHIPS (botões arredondados) */
+.chip-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 240px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0 16px 24px;
+  background-color: var(--color-bg-light);
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  z-index: 15;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Scrollbar elegante no sidebar */
+.chip-nav::-webkit-scrollbar {
+  width: 4px;
+}
+.chip-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+.chip-nav::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+/* faz cada chip preencher a largura do menu para facilitar o clique */
+.chip-nav .chip {
+  display: inline-flex;
+  width: 100%;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* CONTEÚDO PRINCIPAL */
+.page-wrapper {
+  max-width: 960px;
+  margin: 32px auto;
+  padding: 0 24px 48px;
+  margin-left: 264px;
+  min-height: 60vh;
+  transition: opacity var(--transition);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-wrapper.loading {
+  opacity: 0.5;
+}
+
+/* TÍTULOS DAS PÁGINAS (h1 global) */
+.page-wrapper > h1 {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+  position: relative;
+  padding-bottom: 16px;
+}
+
+.page-wrapper > h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light));
+  border-radius: 2px;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 768px) {
+  /* sidebar vira menu horizontal */
+  .chip-nav {
+    position: static;
+    width: 100%;
+    height: auto;
+    flex-wrap: wrap;
+    flex-direction: row;
+    padding: 12px 16px 16px;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    margin-top: 0;
+    box-shadow: var(--shadow-sm);
+    gap: 8px;
+  }
+
+  /* reset dos chips para evitar largura total quando horizontal */
+  .chip-nav .chip {
+    width: auto;
+    justify-content: center;
+  }
+
+  .page-wrapper {
+    margin-left: 0;
+    padding: 0 16px 32px;
+    margin-top: 16px;
+  }
+
+  .page-wrapper > h1 {
+    font-size: 26px;
+  }
+}
