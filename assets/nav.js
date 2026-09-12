@@ -17,6 +17,7 @@
     { href: 'saap.html', label: 'SAAP', title: 'Serviço de Acessibilidade e Apoio Psicopedagógico' },
     { href: 'quadro-docente.html', label: 'Quadro Docente', title: 'Professores do curso' },
     { href: 'representantes-turma.html', label: 'Representantes de Turma', title: 'Representantes de cada turma' },
+    { href: 'avaliacao-diagnostica.html', label: 'Avaliação Diagnóstica', title: 'Simulação de avaliação diagnóstica' },
     { href: 'https://bcc-senac.github.io/tccs/', label: 'TCC', title: 'Biblioteca digital de TCCs', external: true },
     { href: 'faq.html', label: 'FAQ', title: 'Perguntas frequentes' },
     // Páginas sem conteúdo (ocultas)
