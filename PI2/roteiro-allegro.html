@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>Roteiro: Ambiente C com Allegro 5</title>
+    <link rel="stylesheet" href="../css/style.css?v=1">
+</head>
+<body>
+    <main class="page-wrapper rt-pagina">
+      <!--
+        Página avulsa da pasta PI2: não aparece no menu do site e não carrega o nav.js.
+        Usa a paleta do site (../css/style.css); os estilos abaixo são só deste roteiro,
+        com prefixo .rt- e cores vindas das variáveis de :root.
+      -->
+      <style>
+        /* Sem o menu lateral do site, o conteúdo fica centralizado */
+        main.page-wrapper.rt-pagina { margin-left: auto; margin-right: auto; }
+
+        .rt {
+          --rt-code-bg: #1a1a2e;
+          --rt-code-bar: #16213e;
+          --rt-code-text: #e6ebf2;
+          --rt-azul-claro: #e8f0fb;
+          --rt-laranja-claro: #fff4e6;
+        }
+        .rt .card + .card,
+        .rt .card + details,
+        .rt details + details,
+        .rt details + .card { margin-top: 24px; }
+
+        .rt .card-title { max-width: 22ch; }
+        .rt .rt-lead {
+          font-size: 17px;
+          line-height: 1.65;
+          color: var(--color-text-dark);
+          max-width: 62ch;
+          margin: 16px 0 0;
+        }
+        .rt p, .rt li { max-width: 72ch; }
+        .rt .section-title:first-child { margin-top: 0; }
+        .rt h3 {
+          font-size: 16px;
+          color: var(--color-primary);
+          margin: 28px 0 10px;
+        }
+
+        /* Código em linha */
+        .rt code {
+          font-family: "Cascadia Code", Consolas, "SFMono-Regular", Menlo, monospace;
+          font-size: 0.88em;
+          background: var(--color-bg-hover);
+          border: 1px solid var(--color-border);
+          border-radius: 4px;
+          padding: 1px 5px;
+          overflow-wrap: anywhere;
+        }
+
+        /* Blocos de código com nome do arquivo */
+        .rt figure.rt-codigo { margin: 14px 0 22px; }
+        .rt .rt-codigo figcaption {
+          background: var(--rt-code-bar);
+          color: var(--color-accent-light);
+          font: 600 12px/1 "Cascadia Code", Consolas, monospace;
+          padding: 10px 16px;
+          border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+        }
+        .rt .rt-codigo pre {
+          margin: 0;
+          background: var(--rt-code-bg);
+          color: var(--rt-code-text);
+          padding: 16px 18px;
+          border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+          overflow-x: auto;
+          font: 13.5px/1.55 "Cascadia Code", Consolas, "SFMono-Regular", Menlo, monospace;
+          tab-size: 4;
+        }
+        .rt .rt-codigo pre code {
+          background: none; border: 0; padding: 0; font-size: inherit; color: inherit;
+        }
+
+        /* As duas rotas (Visual Studio / VS Code) */
+        .rt .rt-rotas {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          gap: 16px;
+          margin: 24px 0 8px;
+        }
+        .rt .rt-rota {
+          border: 1px solid var(--color-border);
+          border-top: 5px solid var(--color-primary);
+          border-radius: var(--radius-md);
+          padding: 18px 20px;
+          background: var(--rt-azul-claro);
+        }
+        .rt .rt-rota-b {
+          border-top-color: var(--color-accent);
+          background: var(--rt-laranja-claro);
+        }
+        .rt .rt-rota h3 { margin: 0 0 10px; font-size: 18px; }
+        .rt .rt-rota-b h3 { color: var(--color-accent-dark); }
+        .rt .rt-rota dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 14px; }
+        .rt .rt-rota dt { color: var(--color-text-gray); }
+        .rt .rt-rota dd { margin: 0; font-weight: 600; }
+
+        /* Letra da rota, usada nos títulos */
+        .rt .rt-letra {
+          display: inline-grid;
+          place-items: center;
+          width: 30px; height: 30px;
+          border-radius: 50%;
+          background: var(--color-primary);
+          color: #fff;
+          font-weight: 800;
+          font-size: 15px;
+          margin-right: 10px;
+          vertical-align: middle;
+          flex-shrink: 0;
+        }
+        .rt .rt-rota-b .rt-letra,
+        .rt .rt-parte-b .rt-letra { background: var(--color-accent); }
+
+        /* Partes A e B recolhíveis */
+        .rt details.rt-parte {
+          background: var(--color-bg-light);
+          border: 1px solid var(--color-border);
+          border-left: 6px solid var(--color-primary);
+          border-radius: var(--radius-lg);
+          box-shadow: var(--shadow-md);
+        }
+        .rt details.rt-parte-b { border-left-color: var(--color-accent); }
+        .rt details.rt-parte > summary {
+          list-style: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 24px 32px;
+          border-radius: var(--radius-lg);
+        }
+        .rt details.rt-parte > summary::-webkit-details-marker { display: none; }
+        .rt details.rt-parte > summary:focus-visible {
+          outline: 3px solid var(--color-accent);
+          outline-offset: 2px;
+        }
+        .rt .rt-summary-texto { flex: 1; }
+        .rt .rt-summary-texto strong {
+          display: block;
+          font-size: 20px;
+          color: var(--color-primary);
+          line-height: 1.3;
+        }
+        .rt .rt-parte-b .rt-summary-texto strong { color: var(--color-accent-dark); }
+        .rt .rt-summary-texto span { color: var(--color-text-gray); font-size: 14px; }
+        .rt .rt-seta {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--color-primary);
+          white-space: nowrap;
+        }
+        .rt .rt-parte-b .rt-seta { color: var(--color-accent-dark); }
+        .rt .rt-seta::after { content: "Abrir"; }
+        .rt details[open] .rt-seta::after { content: "Fechar"; }
+        .rt .rt-parte-corpo { padding: 0 40px 36px; border-top: 1px solid var(--color-border); }
+        .rt .rt-parte-corpo > p:first-child { margin-top: 20px; }
+
+        /* Passos numerados */
+        .rt ol.rt-passos {
+          counter-reset: passo;
+          list-style: none;
+          padding: 0;
+          margin: 8px 0 18px;
+        }
+        .rt ol.rt-passos > li {
+          counter-increment: passo;
+          position: relative;
+          padding: 3px 0 3px 42px;
+          margin-bottom: 12px;
+        }
+        .rt ol.rt-passos > li::before {
+          content: counter(passo);
+          position: absolute;
+          left: 0; top: 1px;
+          width: 28px; height: 28px;
+          border-radius: 50%;
+          display: grid; place-items: center;
+          font-size: 13px; font-weight: 700;
+          color: var(--color-primary);
+          border: 2px solid var(--color-primary);
+          background: var(--color-bg-light);
+        }
+        .rt .rt-parte-b ol.rt-passos > li::before {
+          color: var(--color-accent-dark);
+          border-color: var(--color-accent);
+        }
+
+        /* Dicas */
+        .rt .rt-dica {
+          background: var(--color-bg-hover);
+          border-left: 4px solid var(--color-accent);
+          border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+          padding: 14px 18px;
+          margin: 18px 0;
+          font-size: 14.5px;
+        }
+        .rt .rt-dica p { margin: 0; }
+
+        /* Tabelas */
+        .rt .rt-tabela-wrap {
+          overflow-x: auto;
+          margin: 14px 0 20px;
+          border-radius: var(--radius-md);
+          box-shadow: var(--shadow-sm);
+          border: 1px solid var(--color-border);
+        }
+        .rt table.rt-tabela {
+          width: 100%;
+          min-width: 560px;
+          border-collapse: collapse;
+          font-size: 14px;
+        }
+        .rt .rt-tabela th {
+          background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+          color: #fff;
+          text-align: left;
+          font-weight: 600;
+          padding: 11px 14px;
+        }
+        .rt .rt-tabela td {
+          padding: 11px 14px;
+          border-top: 1px solid var(--color-border);
+          vertical-align: top;
+        }
+        .rt .rt-tabela tbody tr:nth-child(even) { background: var(--color-bg-hover); }
+        .rt .rt-tabela td:first-child { font-weight: 600; }
+        .rt .rt-onde {
+          display: inline-block;
+          font-size: 12px;
+          font-weight: 700;
+          padding: 2px 8px;
+          border-radius: 999px;
+          white-space: nowrap;
+          background: var(--rt-azul-claro);
+          color: var(--color-primary);
+        }
+        .rt .rt-onde-b { background: var(--rt-laranja-claro); color: var(--color-accent-dark); }
+        .rt .rt-onde-ambos { background: var(--color-bg-hover); color: var(--color-text-gray); }
+
+        /* Checklist */
+        .rt .rt-checklist { list-style: none; padding: 0; margin: 12px 0 0; }
+        .rt .rt-checklist li { margin-bottom: 10px; }
+        .rt .rt-checklist label {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+          cursor: pointer;
+          padding: 10px 14px;
+          border: 1px solid var(--color-border);
+          border-radius: var(--radius-sm);
+        }
+        .rt .rt-checklist input {
+          accent-color: var(--color-accent);
+          width: 18px; height: 18px;
+          margin-top: 2px;
+          flex-shrink: 0;
+        }
+        .rt .rt-checklist input:checked + span {
+          color: var(--color-text-gray);
+          text-decoration: line-through;
+          text-decoration-color: var(--color-accent);
+        }
+
+        @media (max-width: 768px) {
+          .rt details.rt-parte > summary { padding: 20px; }
+          .rt .rt-parte-corpo { padding: 0 20px 28px; }
+          .rt .rt-summary-texto strong { font-size: 18px; }
+          .rt .rt-lead { font-size: 16px; }
+        }
+      </style>
+
+      <div class="rt">
+
+        <!-- CABEÇALHO E APRESENTAÇÃO -->
+        <section class="card">
+          <p class="card-tag">Roteiro de laboratório</p>
+          <h1 class="card-title">Ambiente de desenvolvimento C com Allegro 5</h1>
+          <p class="rt-lead">
+            Ao final deste roteiro, você terá um projeto em C que abre uma janela gráfica com a
+            biblioteca Allegro 5, compilando e rodando no seu computador com Windows.
+          </p>
+
+          <h2 class="section-title">1. Apresentação</h2>
+          <p class="description-text">
+            Allegro 5 é uma biblioteca multiplataforma para jogos e aplicações multimídia. Ela cuida de
+            janela, teclado, mouse, imagens, fontes, sons e temporizadores, e é escrita em C.
+          </p>
+          <p class="description-text">
+            O roteiro traz dois caminhos independentes. Siga <strong>apenas um</strong>: a Parte A
+            (Visual Studio) ou a Parte B (VS Code). Depois, todos seguem juntos a partir da seção 5.
+          </p>
+
+          <div class="rt-rotas">
+            <div class="rt-rota">
+              <h3><span class="rt-letra">A</span>Visual Studio</h3>
+              <dl>
+                <dt>Compilador</dt><dd>MSVC (Microsoft)</dd>
+                <dt>Instalação</dt><dd>Pacote NuGet, dentro da IDE</dd>
+                <dt>Indicado para</dt><dd>Quem quer a instalação mais simples</dd>
+              </dl>
+            </div>
+            <div class="rt-rota rt-rota-b">
+              <h3><span class="rt-letra">B</span>VS Code</h3>
+              <dl>
+                <dt>Compilador</dt><dd>GCC (MinGW-w64 via MSYS2)</dd>
+                <dt>Instalação</dt><dd>Gerenciador de pacotes <code>pacman</code></dd>
+                <dt>Indicado para</dt><dd>Quem quer um editor leve ou já usa GCC</dd>
+              </dl>
+            </div>
+          </div>
+
+          <h2 class="section-title">2. Pré-requisitos</h2>
+          <p class="description-text">
+            Você precisa de um computador com Windows 10 ou 11 (64 bits), acesso de administrador e
+            internet durante a instalação.
+          </p>
+          <ul class="link-list">
+            <li><strong>Espaço em disco:</strong> cerca de 8 GB para o Visual Studio, ou cerca de 2 GB para VS Code + MSYS2.</li>
+            <li><strong>Conhecimento prévio:</strong> saber criar pastas, abrir o terminal e compilar um "Olá, mundo" em C.</li>
+            <li><strong>Pasta de trabalho:</strong> crie uma pasta sem espaços nem acentos no caminho, por exemplo
+              <code>C:\projetos\allegro</code>. Caminhos como <code>C:\Users\João\Área de Trabalho</code>
+              causam erros de compilação e de linkagem.</li>
+          </ul>
+        </section>
+
+        <!-- PARTE A — VISUAL STUDIO -->
+        <details class="rt-parte rt-parte-a">
+          <summary>
+            <span class="rt-letra">A</span>
+            <span class="rt-summary-texto">
+              <strong>3. Parte A — Visual Studio</strong>
+              <span>Allegro instalado pelo NuGet, compilador da Microsoft</span>
+            </span>
+            <span class="rt-seta" aria-hidden="true"></span>
+          </summary>
+          <div class="rt-parte-corpo">
+            <p>
+              No Visual Studio, o Allegro é instalado pelo gerenciador de pacotes NuGet, recomendado pela
+              <a href="https://github.com/liballeg/allegro_wiki/wiki/Allegro-in-Visual-Studio" target="_blank" rel="noopener noreferrer">wiki oficial do Allegro</a>.
+              A versão mais recente no NuGet é a
+              <a href="https://www.nuget.org/packages/Allegro" target="_blank" rel="noopener noreferrer">5.2.11.2</a>.
+            </p>
+
+            <h3>A.1 Instalar o Visual Studio</h3>
+            <ol class="rt-passos">
+              <li>Baixe o <strong>Visual Studio Community</strong> (gratuito) em
+                <a href="https://visualstudio.microsoft.com/pt-br/downloads/" target="_blank" rel="noopener noreferrer">visualstudio.microsoft.com</a>.
+                Use a versão 2022 ou mais recente.</li>
+              <li>No instalador, marque a carga de trabalho <strong>Desenvolvimento para desktop com C++</strong>.</li>
+              <li>Clique em <strong>Instalar</strong> e aguarde. Reinicie o computador se for solicitado.</li>
+            </ol>
+
+            <h3>A.2 Criar o projeto</h3>
+            <ol class="rt-passos">
+              <li>Abra o Visual Studio e clique em <strong>Criar um projeto</strong>.</li>
+              <li>Escolha o modelo <strong>Projeto Vazio</strong> (linguagem C++). Não existe um modelo "C"; o
+                compilador trata arquivos <code>.c</code> como C automaticamente.</li>
+              <li>Dê o nome <code>JogoAllegro</code>, salve em <code>C:\projetos\allegro</code> e clique em <strong>Criar</strong>.</li>
+              <li>No <strong>Gerenciador de Soluções</strong>, clique com o botão direito em
+                <strong>Arquivos de Origem</strong> → <strong>Adicionar</strong> → <strong>Novo Item</strong>.</li>
+              <li>Nomeie o arquivo como <code>main.c</code> (com extensão <code>.c</code>, não <code>.cpp</code>) e
+                clique em <strong>Adicionar</strong>.</li>
+              <li>Na barra superior, confirme que a plataforma está em <strong>x64</strong>.</li>
+            </ol>
+
+            <h3>A.3 Instalar o Allegro pelo NuGet</h3>
+            <ol class="rt-passos">
+              <li>Clique com o botão direito no <strong>projeto</strong> (não na solução) →
+                <strong>Gerenciar Pacotes do NuGet</strong>.</li>
+              <li>Abra a aba <strong>Procurar</strong> e pesquise <code>Allegro</code>.</li>
+              <li>Selecione o pacote <strong>Allegro</strong> e clique em <strong>Instalar</strong>. O pacote
+                <code>AllegroDeps</code> vem junto automaticamente.</li>
+            </ol>
+            <p>Alternativa pelo console (<strong>Ferramentas</strong> → <strong>Gerenciador de Pacotes do NuGet</strong> → <strong>Console</strong>):</p>
+            <figure class="rt-codigo">
+              <figcaption>Console do Gerenciador de Pacotes</figcaption>
+              <pre><code>Install-Package Allegro</code></pre>
+            </figure>
+
+            <h3>A.4 Configurar o Allegro no projeto</h3>
+            <ol class="rt-passos">
+              <li>Clique com o botão direito no projeto → <strong>Propriedades</strong>.</li>
+              <li>No topo da janela, selecione <strong>Configuração: Todas as Configurações</strong> e
+                <strong>Plataforma: Todas as Plataformas</strong>.</li>
+              <li>Abra o item <strong>Allegro 5</strong> que apareceu na lista à esquerda.</li>
+              <li>Em <strong>Library Type</strong>, escolha <strong>Dynamic Debug - Dynamic Runtime</strong> (para começar).</li>
+              <li>Em <strong>Add-ons</strong>, mude para <strong>Sim</strong> os módulos que o projeto vai usar:</li>
+            </ol>
+            <div class="rt-tabela-wrap">
+              <table class="rt-tabela">
+                <thead>
+                  <tr><th>Add-on</th><th>Para que serve</th><th>Função de inicialização</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Image</td><td>Carregar PNG, JPG, BMP</td><td><code>al_init_image_addon()</code></td></tr>
+                  <tr><td>Font</td><td>Escrever texto na tela</td><td><code>al_init_font_addon()</code></td></tr>
+                  <tr><td>TrueType Font</td><td>Usar arquivos <code>.ttf</code></td><td><code>al_init_ttf_addon()</code></td></tr>
+                  <tr><td>Primitives</td><td>Desenhar linhas, retângulos, círculos</td><td><code>al_init_primitives_addon()</code></td></tr>
+                  <tr><td>Audio</td><td>Tocar sons</td><td><code>al_install_audio()</code></td></tr>
+                  <tr><td>Audio Codec</td><td>Abrir WAV, OGG, MP3</td><td><code>al_init_acodec_addon()</code></td></tr>
+                  <tr><td>Native Dialogs</td><td>Caixas de mensagem do sistema</td><td><code>al_init_native_dialog_addon()</code></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <ol class="rt-passos" start="6" style="counter-reset: passo 5">
+              <li>Clique em <strong>Aplicar</strong> e <strong>OK</strong>.</li>
+            </ol>
+
+            <h3>A.5 Compilar e executar</h3>
+            <ol class="rt-passos">
+              <li>Cole o programa de teste da seção 5 em <code>main.c</code>.</li>
+              <li>Pressione <strong>F5</strong> (depurar) ou <strong>Ctrl+F5</strong> (executar sem depurar).</li>
+              <li>Uma janela preta com um quadrado laranja deve aparecer. Se aparecer, vá para a seção 5 para entender o código.</li>
+            </ol>
+            <div class="rt-dica">
+              <p><strong>Dica:</strong> se o compilador reclamar de <code>scanf</code> ou <code>fopen</code> "inseguros"
+                (aviso C4996), adicione <code>#define _CRT_SECURE_NO_WARNINGS</code> na primeira linha do <code>main.c</code>.</p>
+            </div>
+          </div>
+        </details>
+
+        <!-- PARTE B — VS CODE -->
+        <details class="rt-parte rt-parte-b">
+          <summary>
+            <span class="rt-letra">B</span>
+            <span class="rt-summary-texto">
+              <strong>4. Parte B — VS Code</strong>
+              <span>GCC e Allegro instalados pelo MSYS2</span>
+            </span>
+            <span class="rt-seta" aria-hidden="true"></span>
+          </summary>
+          <div class="rt-parte-corpo">
+            <p>
+              No VS Code, o compilador GCC e o Allegro vêm do MSYS2, que instala o pacote
+              <a href="https://packages.msys2.org/package/mingw-w64-ucrt-x86_64-allegro" target="_blank" rel="noopener noreferrer">mingw-w64-ucrt-x86_64-allegro</a>
+              (versão 5.2.11.1). O VS Code é só o editor; ele chama o GCC por meio de arquivos de
+              configuração na pasta <code>.vscode</code>.
+            </p>
+
+            <h3>B.1 Instalar o MSYS2</h3>
+            <ol class="rt-passos">
+              <li>Baixe o instalador em <a href="https://www.msys2.org/" target="_blank" rel="noopener noreferrer">msys2.org</a>
+                e instale no caminho padrão <code>C:\msys64</code>.</li>
+              <li>Ao final, abra o terminal <strong>MSYS2 UCRT64</strong> pelo menu Iniciar. Use sempre esse terminal nesta parte.</li>
+              <li>Atualize o sistema. Se o terminal fechar sozinho, abra de novo e repita o comando até não haver mais atualizações:</li>
+            </ol>
+            <figure class="rt-codigo">
+              <figcaption>Terminal MSYS2 UCRT64</figcaption>
+              <pre><code>pacman -Syu</code></pre>
+            </figure>
+
+            <h3>B.2 Instalar o compilador e o Allegro</h3>
+            <p>No terminal <strong>MSYS2 UCRT64</strong>, rode (pressione Enter para aceitar todos os pacotes e <code>Y</code> para confirmar):</p>
+            <figure class="rt-codigo">
+              <figcaption>Terminal MSYS2 UCRT64</figcaption>
+              <pre><code>pacman -S --needed mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-allegro</code></pre>
+            </figure>
+            <p>Confira se deu certo. Os dois comandos devem mostrar um número de versão:</p>
+            <figure class="rt-codigo">
+              <figcaption>Terminal MSYS2 UCRT64</figcaption>
+              <pre><code>gcc --version
+pkg-config --modversion allegro-5</code></pre>
+            </figure>
+
+            <h3>B.3 Colocar o compilador no PATH do Windows</h3>
+            <p>Sem este passo, o VS Code não encontra o <code>gcc</code> e o jogo não encontra as DLLs do Allegro.</p>
+            <ol class="rt-passos">
+              <li>No menu Iniciar, pesquise <strong>Editar as variáveis de ambiente para sua conta</strong>.</li>
+              <li>Em <strong>Variáveis de usuário</strong>, selecione <strong>Path</strong> → <strong>Editar</strong> → <strong>Novo</strong>.</li>
+              <li>Digite <code>C:\msys64\ucrt64\bin</code> e clique em <strong>OK</strong> nas três janelas.</li>
+              <li>Abra um <strong>Prompt de Comando</strong> novo e teste <code>gcc --version</code>. Se aparecer a versão, está certo.</li>
+            </ol>
+
+            <h3>B.4 Instalar o VS Code e a extensão de C</h3>
+            <ol class="rt-passos">
+              <li>Baixe e instale o VS Code em <a href="https://code.visualstudio.com/" target="_blank" rel="noopener noreferrer">code.visualstudio.com</a>.
+                Marque a opção <strong>Adicionar ao PATH</strong> no instalador.</li>
+              <li>Abra o VS Code, vá em <strong>Extensões</strong> (Ctrl+Shift+X) e instale <strong>C/C++</strong> (da Microsoft).</li>
+              <li>Em <strong>Arquivo</strong> → <strong>Abrir Pasta</strong>, abra <code>C:\projetos\allegro\JogoAllegro</code> (crie a pasta antes).</li>
+              <li>Crie o arquivo <code>main.c</code> na raiz da pasta e uma subpasta chamada <code>.vscode</code>.</li>
+            </ol>
+            <p>A estrutura final fica assim:</p>
+            <figure class="rt-codigo">
+              <figcaption>Estrutura de pastas</figcaption>
+              <pre><code>JogoAllegro/
+├── .vscode/
+│   ├── c_cpp_properties.json
+│   ├── tasks.json
+│   └── launch.json
+└── main.c</code></pre>
+            </figure>
+
+            <h3>B.5 Configurar o IntelliSense</h3>
+            <p>Este arquivo faz o editor reconhecer os <code>#include</code> do Allegro e parar de sublinhar o código em vermelho.</p>
+            <figure class="rt-codigo">
+              <figcaption>.vscode/c_cpp_properties.json</figcaption>
+              <pre><code>{
+    "configurations": [
+        {
+            "name": "Win32",
+            "compilerPath": "C:/msys64/ucrt64/bin/gcc.exe",
+            "includePath": ["${workspaceFolder}/**"],
+            "cStandard": "c17",
+            "intelliSenseMode": "windows-gcc-x64"
+        }
+    ],
+    "version": 4
+}</code></pre>
+            </figure>
+
+            <h3>B.6 Configurar a compilação</h3>
+            <p>Este arquivo diz ao VS Code como chamar o GCC. As opções <code>-l</code> ligam os módulos do Allegro;
+              os add-ons vêm antes, e <code>-lallegro</code> fica sempre por último.</p>
+            <figure class="rt-codigo">
+              <figcaption>.vscode/tasks.json</figcaption>
+              <pre><code>{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Compilar Allegro",
+            "type": "process",
+            "command": "C:/msys64/ucrt64/bin/gcc.exe",
+            "args": [
+                "-g", "-Wall", "-std=c17",
+                "${workspaceFolder}/main.c",
+                "-o", "${workspaceFolder}/jogo.exe",
+                "-lallegro_primitives",
+                "-lallegro_font",
+                "-lallegro_ttf",
+                "-lallegro_image",
+                "-lallegro_audio",
+                "-lallegro_acodec",
+                "-lallegro_dialog",
+                "-lallegro"
+            ],
+            "problemMatcher": ["$gcc"],
+            "group": { "kind": "build", "isDefault": true }
+        }
+    ]
+}</code></pre>
+            </figure>
+            <p>Quando o projeto tiver mais arquivos <code>.c</code>, acrescente cada um na lista <code>args</code>, logo abaixo de <code>main.c</code>.</p>
+
+            <h3>B.7 Configurar a depuração</h3>
+            <p>Este arquivo permite rodar com <strong>F5</strong>, usar breakpoints e ver variáveis. Ele compila antes de executar, graças ao <code>preLaunchTask</code>.</p>
+            <figure class="rt-codigo">
+              <figcaption>.vscode/launch.json</figcaption>
+              <pre><code>{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Depurar jogo",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/jogo.exe",
+            "cwd": "${workspaceFolder}",
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/ucrt64/bin/gdb.exe",
+            "externalConsole": false,
+            "preLaunchTask": "Compilar Allegro"
+        }
+    ]
+}</code></pre>
+            </figure>
+
+            <h3>B.8 Compilar e executar</h3>
+            <ol class="rt-passos">
+              <li>Cole o programa de teste da seção 5 em <code>main.c</code>.</li>
+              <li>Compile com <strong>Ctrl+Shift+B</strong>. O arquivo <code>jogo.exe</code> aparece na pasta.</li>
+              <li>Execute com <strong>F5</strong> (depurando) ou rode <code>.\jogo.exe</code> no terminal do VS Code.</li>
+              <li>Uma janela preta com um quadrado laranja deve aparecer.</li>
+            </ol>
+            <div class="rt-dica">
+              <p><strong>Alternativa sem VS Code:</strong> no terminal MSYS2 UCRT64, dentro da pasta do projeto, compile com
+                <code>gcc main.c -o jogo.exe $(pkg-config --libs allegro-5 allegro_primitives-5 allegro_font-5)</code>.</p>
+            </div>
+          </div>
+        </details>
+
+        <!-- PROGRAMA DE TESTE -->
+        <section class="card">
+          <h2 class="section-title">5. Programa de teste</h2>
+          <p class="description-text">
+            Este programa abre uma janela de 800×600, desenha um quadrado laranja que se move com as setas e
+            fecha com ESC ou no X da janela. Ele usa os add-ons <strong>Font</strong> e <strong>Primitives</strong>;
+            no Visual Studio, confirme que os dois estão como <strong>Sim</strong> (seção A.4).
+          </p>
+          <figure class="rt-codigo">
+            <figcaption>main.c</figcaption>
+            <pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdbool.h&gt;
+#include &lt;allegro5/allegro.h&gt;
+#include &lt;allegro5/allegro_font.h&gt;
+#include &lt;allegro5/allegro_primitives.h&gt;
+
+#define LARGURA 800
+#define ALTURA  600
+#define FPS     60.0
+
+int main(void)
+{
+    /* 1. Inicializacao da biblioteca e dos modulos */
+    if (!al_init()) {
+        fprintf(stderr, "Falha ao iniciar o Allegro.\n");
+        return 1;
+    }
+    if (!al_install_keyboard() || !al_init_primitives_addon() || !al_init_font_addon()) {
+        fprintf(stderr, "Falha ao iniciar teclado ou add-ons.\n");
+        return 1;
+    }
+
+    /* 2. Criacao dos recursos */
+    ALLEGRO_DISPLAY     *janela = al_create_display(LARGURA, ALTURA);
+    ALLEGRO_TIMER       *timer  = al_create_timer(1.0 / FPS);
+    ALLEGRO_EVENT_QUEUE *fila   = al_create_event_queue();
+    ALLEGRO_FONT        *fonte  = al_create_builtin_font();
+    if (!janela || !timer || !fila || !fonte) {
+        fprintf(stderr, "Falha ao criar janela, timer, fila ou fonte.\n");
+        return 1;
+    }
+    al_set_window_title(janela, "Meu primeiro jogo em Allegro");
+
+    /* 3. A fila recebe eventos da janela, do timer e do teclado */
+    al_register_event_source(fila, al_get_display_event_source(janela));
+    al_register_event_source(fila, al_get_timer_event_source(timer));
+    al_register_event_source(fila, al_get_keyboard_event_source());
+
+    /* 4. Estado do jogo */
+    float x = LARGURA / 2.0f, y = ALTURA / 2.0f;
+    const float TAM = 40.0f, VEL = 4.0f;
+    bool teclas[ALLEGRO_KEY_MAX] = { false };
+    bool rodando = true, redesenhar = true;
+
+    /* 5. Laco principal */
+    al_start_timer(timer);
+    while (rodando) {
+        ALLEGRO_EVENT ev;
+        al_wait_for_event(fila, &amp;ev);
+
+        switch (ev.type) {
+        case ALLEGRO_EVENT_DISPLAY_CLOSE:
+            rodando = false;
+            break;
+        case ALLEGRO_EVENT_KEY_DOWN:
+            teclas[ev.keyboard.keycode] = true;
+            if (ev.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+                rodando = false;
+            break;
+        case ALLEGRO_EVENT_KEY_UP:
+            teclas[ev.keyboard.keycode] = false;
+            break;
+        case ALLEGRO_EVENT_TIMER:          /* logica: 60 vezes por segundo */
+            if (teclas[ALLEGRO_KEY_LEFT])  x -= VEL;
+            if (teclas[ALLEGRO_KEY_RIGHT]) x += VEL;
+            if (teclas[ALLEGRO_KEY_UP])    y -= VEL;
+            if (teclas[ALLEGRO_KEY_DOWN])  y += VEL;
+            if (x &lt; TAM / 2) x = TAM / 2;
+            if (x &gt; LARGURA - TAM / 2) x = LARGURA - TAM / 2;
+            if (y &lt; TAM / 2) y = TAM / 2;
+            if (y &gt; ALTURA - TAM / 2) y = ALTURA - TAM / 2;
+            redesenhar = true;
+            break;
+        }
+
+        /* 6. Desenho: so quando a fila esvazia, para nao acumular atraso */
+        if (redesenhar &amp;&amp; al_is_event_queue_empty(fila)) {
+            redesenhar = false;
+            al_clear_to_color(al_map_rgb(0, 0, 0));
+            al_draw_filled_rectangle(x - TAM / 2, y - TAM / 2, x + TAM / 2, y + TAM / 2,
+                                     al_map_rgb(255, 140, 0));
+            al_draw_text(fonte, al_map_rgb(255, 255, 255), 10, 10, 0,
+                         "Setas movem o quadrado. ESC para sair.");
+            al_flip_display();
+        }
+    }
+
+    /* 7. Liberacao dos recursos, na ordem inversa da criacao */
+    al_destroy_font(fonte);
+    al_destroy_event_queue(fila);
+    al_destroy_timer(timer);
+    al_destroy_display(janela);
+    return 0;
+}</code></pre>
+          </figure>
+
+          <p class="description-text">O código segue a estrutura que todo projeto Allegro terá:</p>
+          <div class="rt-tabela-wrap">
+            <table class="rt-tabela">
+              <thead>
+                <tr><th>Etapa</th><th>O que faz</th><th>Funções principais</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>1. Inicialização</td><td>Liga a biblioteca, o teclado e os add-ons</td><td><code>al_init</code>, <code>al_install_keyboard</code>, <code>al_init_*_addon</code></td></tr>
+                <tr><td>2. Recursos</td><td>Cria janela, timer, fila de eventos e fonte</td><td><code>al_create_display</code>, <code>al_create_timer</code>, <code>al_create_event_queue</code></td></tr>
+                <tr><td>3. Fontes de eventos</td><td>Diz à fila de onde vêm os eventos</td><td><code>al_register_event_source</code></td></tr>
+                <tr><td>4–5. Laço principal</td><td>Espera eventos e atualiza o estado a cada tique do timer</td><td><code>al_wait_for_event</code></td></tr>
+                <tr><td>6. Desenho</td><td>Limpa a tela, desenha e troca o buffer</td><td><code>al_clear_to_color</code>, <code>al_draw_*</code>, <code>al_flip_display</code></td></tr>
+                <tr><td>7. Encerramento</td><td>Libera memória e fecha a janela</td><td><code>al_destroy_*</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="rt-dica">
+            <p>O texto desenhado na tela usa a fonte embutida do Allegro, que só tem caracteres ASCII. Para usar acentos,
+              carregue um arquivo <code>.ttf</code> com <code>al_load_ttf_font</code> e salve o <code>main.c</code> em UTF-8.</p>
+          </div>
+        </section>
+
+        <!-- SOLUÇÃO DE PROBLEMAS -->
+        <section class="card">
+          <h2 class="section-title">6. Solução de problemas</h2>
+          <p class="description-text">
+            A maioria dos erros vem de três causas: add-on não ativado, biblioteca não ligada (<code>-l</code>) ou DLL fora do PATH.
+          </p>
+          <div class="rt-tabela-wrap">
+            <table class="rt-tabela">
+              <thead>
+                <tr><th>Sintoma</th><th>Onde</th><th>Causa provável</th><th>Solução</th></tr>
+              </thead>
+              <tbody>
+                <tr><td><code>cannot open source file "allegro5/allegro.h"</code></td><td><span class="rt-onde">Visual Studio</span></td><td>Pacote NuGet não instalado neste projeto</td><td>Refaça a seção A.3 clicando com o botão direito no <strong>projeto</strong>, não na solução</td></tr>
+                <tr><td><code>LNK2019: símbolo externo não resolvido al_draw_...</code></td><td><span class="rt-onde">Visual Studio</span></td><td>Add-on desativado</td><td>Em <strong>Propriedades → Allegro 5 → Add-ons</strong>, ative o módulo (ex.: Primitives)</td></tr>
+                <tr><td>Funciona em Debug, mas não em Release</td><td><span class="rt-onde">Visual Studio</span></td><td>Add-ons ativados só em uma configuração</td><td>Na seção A.4, use <strong>Todas as Configurações</strong> e <strong>Todas as Plataformas</strong></td></tr>
+                <tr><td><code>'gcc' não é reconhecido como comando</code></td><td><span class="rt-onde rt-onde-b">VS Code</span></td><td>PATH não configurado</td><td>Refaça a seção B.3 e <strong>feche e reabra</strong> o VS Code</td></tr>
+                <tr><td><code>fatal error: allegro5/allegro.h: No such file or directory</code></td><td><span class="rt-onde rt-onde-b">VS Code</span></td><td>Allegro instalado em outro ambiente do MSYS2</td><td>Instale o pacote com prefixo <code>ucrt-x86_64</code> e use o GCC de <code>C:\msys64\ucrt64\bin</code></td></tr>
+                <tr><td><code>undefined reference to al_draw_filled_rectangle</code></td><td><span class="rt-onde rt-onde-b">VS Code</span></td><td>Falta a biblioteca do add-on</td><td>Acrescente <code>-lallegro_primitives</code> (antes de <code>-lallegro</code>) no <code>tasks.json</code></td></tr>
+                <tr><td>"allegro-5.2.dll não foi encontrado" ao abrir o <code>.exe</code></td><td><span class="rt-onde rt-onde-b">VS Code</span></td><td>DLLs fora do PATH ou da pasta</td><td>Configure o PATH (B.3) e reabra o VS Code</td></tr>
+                <tr><td>Sublinhado vermelho no <code>#include</code>, mas compila</td><td><span class="rt-onde rt-onde-b">VS Code</span></td><td>IntelliSense sem o compilador certo</td><td>Confira o <code>compilerPath</code> no <code>c_cpp_properties.json</code></td></tr>
+                <tr><td>Janela abre e fecha na hora</td><td><span class="rt-onde rt-onde-ambos">Ambos</span></td><td>Falha em <code>al_create_display</code> ou arquivo de recurso não encontrado</td><td>Leia a mensagem no terminal e confira o caminho dos arquivos carregados</td></tr>
+                <tr><td>Erros estranhos com caminhos</td><td><span class="rt-onde rt-onde-ambos">Ambos</span></td><td>Espaços ou acentos no caminho da pasta</td><td>Mova o projeto para <code>C:\projetos\allegro</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="description-text">
+            Para consultar funções, use o
+            <a href="https://liballeg.org/a5docs/trunk/" target="_blank" rel="noopener noreferrer">manual oficial do Allegro 5</a>.
+          </p>
+        </section>
+
+        <!-- CHECKLIST E FONTES -->
+        <section class="card">
+          <h2 class="section-title">7. Checklist final do aluno</h2>
+          <p class="description-text">Marque cada item antes de começar o projeto:</p>
+          <ul class="rt-checklist">
+            <li><label><input type="checkbox"><span>Escolhi um caminho: Visual Studio (Parte A) ou VS Code (Parte B)</span></label></li>
+            <li><label><input type="checkbox"><span>Meu projeto está em uma pasta sem espaços nem acentos</span></label></li>
+            <li><label><input type="checkbox"><span>O Allegro está instalado (NuGet no Visual Studio ou <code>pacman</code> no MSYS2)</span></label></li>
+            <li><label><input type="checkbox"><span>Os add-ons que vou usar estão ativados (Visual Studio) ou ligados com <code>-l</code> (VS Code)</span></label></li>
+            <li><label><input type="checkbox"><span>O programa de teste compila sem erros</span></label></li>
+            <li><label><input type="checkbox"><span>A janela abre, o quadrado se move com as setas e ESC fecha o programa</span></label></li>
+          </ul>
+
+          <h2 class="section-title">Fontes</h2>
+          <ul class="link-list">
+            <li><a href="https://github.com/liballeg/allegro_wiki/wiki/Allegro-in-Visual-Studio" target="_blank" rel="noopener noreferrer">Allegro in Visual Studio — wiki oficial do Allegro</a></li>
+            <li><a href="https://www.nuget.org/packages/Allegro" target="_blank" rel="noopener noreferrer">Pacote Allegro no NuGet</a></li>
+            <li><a href="https://packages.msys2.org/package/mingw-w64-ucrt-x86_64-allegro" target="_blank" rel="noopener noreferrer">Pacote mingw-w64-ucrt-x86_64-allegro no MSYS2</a></li>
+            <li><a href="https://liballeg.org/a5docs/trunk/" target="_blank" rel="noopener noreferrer">Manual do Allegro 5</a></li>
+          </ul>
+        </section>
+
+      </div>
+    </main>
+
+</body>
+</html>
