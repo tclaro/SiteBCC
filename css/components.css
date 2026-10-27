@@ -181,6 +181,21 @@
   letter-spacing: 1px;
 }
 
+/* SELO "NOVO" (ex: ao lado de títulos de seção recém-adicionados) */
+.new-badge {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 3px 10px;
+  background: var(--color-accent);
+  color: var(--color-bg-light);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: var(--radius-sm);
+  vertical-align: middle;
+}
+
 /* RESPONSIVIDADE */
 @media (max-width: 768px) {
   .card {
